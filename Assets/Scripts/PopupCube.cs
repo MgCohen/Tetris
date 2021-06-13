@@ -15,4 +15,9 @@ public class PopupCube : MonoBehaviour
     {
         GetComponent<MeshRenderer>().material.color = Color.white;
     }
+
+    public void Unmark()
+    {
+        GetComponent<MeshRenderer>().material.color = Color.black;
+    }
 }

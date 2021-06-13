@@ -49,22 +49,59 @@ public class Board : MonoBehaviour
             Vector2 piecePos = cube.transform.position;
             Vector2Int movePos = new Vector2Int(Mathf.RoundToInt(piecePos.x), Mathf.RoundToInt(piecePos.y));
 
-            boardFill[movePos.x, movePos.y] = cube;
-            bgFill[movePos.x, movePos.y].Mark();
+            if (movePos.x >= 0 && movePos.x < limits.x && movePos.y >= 0 && movePos.y < limits.y)
+            {
+                boardFill[movePos.x, movePos.y] = cube;
+                bgFill[movePos.x, movePos.y].Mark();
+            }
         }
     }
 
     /// <summary>
     /// Check every space on that line, if all are true returns true as a line is filled.
     /// </summary>
-    public bool CheckLines()
+    public bool CheckLine(int height)
     {
         for (int i = 0; i < limits.x; i++)
         {
-            if (boardFill[i, 0] == null) return false;
+            if (boardFill[i, height] == null) return false;
         }
 
+        DestroyLine(height);
         return true;
+    }
+
+    void DestroyLine(int height)
+    {
+        for (int i = 0; i < limits.x; i++)
+        {
+            Destroy(boardFill[i, height].gameObject);
+            boardFill[i, height] = null;
+            bgFill[i, height].Unmark();
+        }
+
+        //SCORE POINTS
+
+        //Activate gravity
+
+    }
+
+
+    public void ActivateGravity(int startingHeight, int gravityAmount)
+    {
+        for (int i = startingHeight + gravityAmount; i < limits.y; i++)
+        {
+            Debug.Log(i);
+            for (int j = 0; j < limits.x; j++)
+            {
+                bgFill[j, i].Unmark();
+                if (boardFill[j, i] == null) continue;
+                boardFill[j, i].transform.position += (Vector3Int.down * gravityAmount);
+                boardFill[j, i - gravityAmount] = boardFill[j, i];
+                boardFill[j, i] = null;
+                bgFill[j, i - gravityAmount].Mark();
+            }
+        }
     }
 
     IEnumerator BackgroundCO()
@@ -80,7 +117,7 @@ public class Board : MonoBehaviour
                 for (int j = -counter; j <= counter; j++)
                 {
                     Vector3 Pos = new Vector3(i, j, -1) + center;
-                    if (Pos.x >= 0 && Pos.x < limits.x && Pos.y >= 0 && Pos.y < limits.y && bgFill[(int)Pos.x,(int)Pos.y] == null)
+                    if (Pos.x >= 0 && Pos.x < limits.x && Pos.y >= 0 && Pos.y < limits.y && bgFill[(int)Pos.x, (int)Pos.y] == null)
                     {
                         PopupCube cube = Instantiate(bgCube, Pos, Quaternion.identity, transform);
                         bgFill[(int)Pos.x, (int)Pos.y] = cube;
@@ -92,6 +129,8 @@ public class Board : MonoBehaviour
             counter++;
         }
         Debug.Log("OK");
-        Controller.OnReady.Invoke();    
+        Controller.OnReady.Invoke();
     }
+
+
 }

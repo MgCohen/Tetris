@@ -2,21 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Linq;
+
 public class Controller : MonoBehaviour
 {
     public Board board;
     public Piece currentPiece;
-
     public float moveTime;
     float timer;
-
     public DrawBag bag;
-
     bool started = false;
-
     public static UnityEvent OnReady = new UnityEvent();
     int readyCount = 1;
-    int counter = 0;
+    int readyCounter = 0;
 
     private void OnEnable()
     {
@@ -30,9 +28,9 @@ public class Controller : MonoBehaviour
 
     void CheckReady()
     {
-        counter++;
+        readyCounter++;
         Debug.Log(1);
-        if (counter >= readyCount) { SpawnPiece(); started = true; }
+        if (readyCounter >= readyCount) { SpawnPiece(); started = true; }
     }
 
     private void Update()
@@ -46,7 +44,7 @@ public class Controller : MonoBehaviour
         if (timer >= moveTime)
         {
             timer = 0;
-            MoveDown();
+            SoftDrop();
         }
     }
 
@@ -65,9 +63,15 @@ public class Controller : MonoBehaviour
             if (!board.CheckMove(currentPiece))
                 currentPiece.Move(Vector3Int.right);
         }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            currentPiece.Move(Vector3Int.down);
+            if (!board.CheckMove(currentPiece))
+                currentPiece.Move(Vector3Int.up);
+        }
         else if (Input.GetKeyDown(KeyCode.Space)) //DROP
         {
-            DropPiece();
+            HardDrop();
         }
     }
 
@@ -87,7 +91,7 @@ public class Controller : MonoBehaviour
         }
     }
 
-    void DropPiece()
+    void HardDrop()
     {
         while (board.CheckMove(currentPiece))
         {
@@ -96,7 +100,7 @@ public class Controller : MonoBehaviour
         currentPiece.Move(Vector3Int.up);
     }
 
-    void MoveDown()
+    void SoftDrop()
     {
         currentPiece.Move(Vector3Int.down);
         if (!board.CheckMove(currentPiece))
@@ -130,8 +134,16 @@ public class Controller : MonoBehaviour
     void PlacePiece()
     {
         board.PlacePiece(currentPiece);
-        SpawnPiece();
         timer = 0;
-        board.CheckLines();
+        var heights = currentPiece.cubes.Select(x => Mathf.RoundToInt(x.transform.position.y)).Distinct();
+        int dropHeight = 0;
+        foreach (var h in heights)
+        {
+            if (board.CheckLine(h)) dropHeight++;
+        }
+        if(dropHeight > 0)
+        board.ActivateGravity(heights.OrderBy(x => x).First(), dropHeight);
+        SpawnPiece();
     }
+
 }
