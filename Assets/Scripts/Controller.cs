@@ -8,9 +8,10 @@ public class Controller : MonoBehaviour
 {
     public Board board;
     public Piece currentPiece;
+    public Pointer pointer;
     public float moveTime;
     float timer;
-    public DrawBag bag;
+    public Preview preview;
     bool started = false;
     public static UnityEvent OnReady = new UnityEvent();
     int readyCount = 1;
@@ -98,6 +99,7 @@ public class Controller : MonoBehaviour
             currentPiece.Move(Vector3Int.down);
         }
         currentPiece.Move(Vector3Int.up);
+        PlacePiece();
     }
 
     void SoftDrop()
@@ -127,8 +129,11 @@ public class Controller : MonoBehaviour
 
     void SpawnPiece()
     {
-        var piece = bag.GetPiece();
-        currentPiece = Instantiate(piece, new Vector3(5, 23, 0), Quaternion.identity);
+        var piece = preview.NextPiece();
+        piece.transform.SetParent(transform);
+        piece.transform.localRotation = Quaternion.identity;
+        piece.transform.position = new Vector3(board.limits.x / 2, board.limits.y + 2, 0);
+        currentPiece = piece;
     }
 
     void PlacePiece()
@@ -136,13 +141,16 @@ public class Controller : MonoBehaviour
         board.PlacePiece(currentPiece);
         timer = 0;
         var heights = currentPiece.cubes.Select(x => Mathf.RoundToInt(x.transform.position.y)).Distinct();
-        int dropHeight = 0;
+        int scoredLines = 0;
         foreach (var h in heights)
         {
-            if (board.CheckLine(h)) dropHeight++;
+            if (board.CheckLine(h)) scoredLines++;
         }
-        if(dropHeight > 0)
-        board.ActivateGravity(heights.OrderBy(x => x).First(), dropHeight);
+        if(scoredLines > 0)
+        {
+            board.ActivateGravity(heights.OrderBy(x => x).First(), scoredLines);
+            pointer.Score(scoredLines);
+        }
         SpawnPiece();
     }
 
