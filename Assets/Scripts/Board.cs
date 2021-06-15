@@ -79,11 +79,6 @@ public class Board : MonoBehaviour
             boardFill[i, height] = null;
             bgFill[i, height].Unmark();
         }
-
-        //SCORE POINTS
-
-        //Activate gravity
-
     }
 
 
@@ -91,14 +86,14 @@ public class Board : MonoBehaviour
     {
         for (int i = startingHeight + gravityAmount; i < limits.y; i++)
         {
-            Debug.Log(i);
             for (int j = 0; j < limits.x; j++)
             {
+                var cube = boardFill[j, i];
+                if (cube == null) continue;
                 bgFill[j, i].Unmark();
-                if (boardFill[j, i] == null) continue;
-                boardFill[j, i].transform.position += (Vector3Int.down * gravityAmount);
-                boardFill[j, i - gravityAmount] = boardFill[j, i];
+                cube.transform.position += Vector3Int.down * gravityAmount;
                 boardFill[j, i] = null;
+                boardFill[j, i - gravityAmount] = cube;
                 bgFill[j, i - gravityAmount].Mark();
             }
         }

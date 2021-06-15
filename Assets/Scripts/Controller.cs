@@ -12,10 +12,11 @@ public class Controller : MonoBehaviour
     public float moveTime;
     float timer;
     public Preview preview;
-    bool started = false;
     public static UnityEvent OnReady = new UnityEvent();
     int readyCount = 1;
     int readyCounter = 0;
+
+    static GameState state;
 
     private void OnEnable()
     {
@@ -30,13 +31,12 @@ public class Controller : MonoBehaviour
     void CheckReady()
     {
         readyCounter++;
-        Debug.Log(1);
-        if (readyCounter >= readyCount) { SpawnPiece(); started = true; }
+        if (readyCounter >= readyCount) { SpawnPiece(); state = GameState.Playing; }
     }
 
     private void Update()
     {
-        if (!started) return;
+        if (state != GameState.Playing) return;
 
         MovementInput();
         RotationInput();
@@ -154,4 +154,11 @@ public class Controller : MonoBehaviour
         SpawnPiece();
     }
 
+}
+
+enum GameState
+{
+    Starting = 0;
+    Playing = 1;
+    Paused = 2;
 }
