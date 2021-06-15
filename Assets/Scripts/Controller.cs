@@ -6,6 +6,8 @@ using System.Linq;
 
 public class Controller : MonoBehaviour
 {
+    public static GameState state;
+
     public Board board;
     public Piece currentPiece;
     public Pointer pointer;
@@ -16,7 +18,6 @@ public class Controller : MonoBehaviour
     int readyCount = 1;
     int readyCounter = 0;
 
-    static GameState state;
 
     private void OnEnable()
     {
@@ -154,9 +155,21 @@ public class Controller : MonoBehaviour
         SpawnPiece();
     }
 
+    public void Pause()
+    {
+        if (state != GameState.Playing) return;
+        state = GameState.Paused;
+        ViewController.instance.SetView(Views.Pause);
+    }
+
+    public void Unpause()
+    {
+        if (state != GameState.Paused) return;
+    }
+
 }
 
-enum GameState
+public enum GameState
 {
     Starting = 0,
     Playing = 1,
