@@ -47,7 +47,6 @@ public class ViewController : MonoBehaviour
             transform.DORotate(new Vector3(0, 0, 0), 0.8f).OnComplete(() => { callback?.Invoke(); });
             if (Controller.state == GameState.Starting)
             {
-                Debug.Log(1);
                 SceneManager.LoadScene(3, LoadSceneMode.Additive);
             }
         }
