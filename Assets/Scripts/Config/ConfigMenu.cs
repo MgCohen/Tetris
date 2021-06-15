@@ -8,7 +8,7 @@ public class ConfigMenu : MonoBehaviour
     public void StartGame()
     {
         if (ViewController.instance.currentView != Views.Config) return;
-
+        Controller.state = GameState.Starting;
         ViewController.instance.SetView(Views.Game, () => ViewController.instance.UnloadVIew(Views.Config));
     }
 
