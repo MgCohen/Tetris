@@ -158,7 +158,7 @@ public class Controller : MonoBehaviour
 
 enum GameState
 {
-    Starting = 0;
-    Playing = 1;
-    Paused = 2;
+    Starting = 0,
+    Playing = 1,
+    Paused = 2,
 }
