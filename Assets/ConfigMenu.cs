@@ -7,9 +7,9 @@ public class ConfigMenu : MonoBehaviour
     public Config configFile;
     public void StartGame()
     {
-        if (ViewController.instance.currentView != Views.Main) return;
+        if (ViewController.instance.currentView != Views.Config) return;
 
-        ViewController.instance.SetView(Views.Game, () => ViewController.instance.UnloadVIew(Views.Main));
+        ViewController.instance.SetView(Views.Game, () => ViewController.instance.UnloadVIew(Views.Config));
     }
 
     public void UpdateX(string x)

@@ -162,11 +162,6 @@ public class Controller : MonoBehaviour
         ViewController.instance.SetView(Views.Pause);
     }
 
-    public void Unpause()
-    {
-        if (state != GameState.Paused) return;
-    }
-
 }
 
 public enum GameState
