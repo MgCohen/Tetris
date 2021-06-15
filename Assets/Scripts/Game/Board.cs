@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//Main Controller of game
 public class Board : MonoBehaviour
 {
     public Vector2 limits = new Vector2(10, 20);
@@ -11,13 +10,19 @@ public class Board : MonoBehaviour
     public PopupCube[,] bgFill;
     public PopupCube bgCube;
 
+    public Config config;
+
     private void Start()
     {
+        limits = config.boardSize;
         boardFill = new Cube[(int)limits.x, (int)limits.y + 4];
         bgFill = new PopupCube[(int)limits.x, (int)limits.y];
         StartCoroutine(BackgroundCO());
     }
 
+    /// <summary>
+    /// Verifies if the piece is currently on a valid space before placing
+    /// </summary>
     public bool CheckMove(Piece piece)
     {
         foreach (Cube cube in piece.cubes)
@@ -27,31 +32,31 @@ public class Board : MonoBehaviour
             //check if cube is inside valid area
             if (pos.x < 0 || pos.x >= limits.x || pos.y < 0)
             {
-                Debug.Log(1);
                 return false;
             }
 
             //check if there is anything on the target space
             if (boardFill[(int)pos.x, (int)pos.y] != null)
             {
-                Debug.Log(2);
                 return false;
             }
-
         }
+
         return true;
     }
 
+    /// <summary>
+    /// Place a piece and all its cubes on the grid, marking the position.
+    /// </summary>
     public void PlacePiece(Piece piece)
     {
         foreach (Cube cube in piece.cubes)
         {
             Vector2 piecePos = cube.transform.position;
             Vector2Int movePos = new Vector2Int(Mathf.RoundToInt(piecePos.x), Mathf.RoundToInt(piecePos.y));
-
+            boardFill[movePos.x, movePos.y] = cube;
             if (movePos.x >= 0 && movePos.x < limits.x && movePos.y >= 0 && movePos.y < limits.y)
             {
-                boardFill[movePos.x, movePos.y] = cube;
                 bgFill[movePos.x, movePos.y].Mark();
             }
         }
@@ -71,6 +76,9 @@ public class Board : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Destroy all cubes in a set height
+    /// </summary>
     void DestroyLine(int height)
     {
         for (int i = 0; i < limits.x; i++)
@@ -81,7 +89,9 @@ public class Board : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Makes all cubes above a set height to fall
+    /// </summary>
     public void ActivateGravity(int startingHeight, int gravityAmount)
     {
         for (int i = startingHeight + gravityAmount; i < limits.y; i++)
@@ -99,6 +109,9 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Generic, poor implementation of flood-fill just for show
+    /// </summary>
     IEnumerator BackgroundCO()
     {
         Vector3 center = new Vector3(limits.x / 2, 0);

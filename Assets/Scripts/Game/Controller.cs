@@ -8,19 +8,23 @@ public class Controller : MonoBehaviour
 {
     public static GameState state;
 
+    public static UnityEvent OnReady = new UnityEvent();
+
     public Board board;
     public Piece currentPiece;
     public Pointer pointer;
+    public Preview preview;
+    public GameObject GameoverPanel;
     public float moveTime;
     float timer;
-    public Preview preview;
-    public static UnityEvent OnReady = new UnityEvent();
     int readyCount = 1;
     int readyCounter = 0;
 
 
+
     private void OnEnable()
     {
+        state = GameState.Starting;
         OnReady.AddListener(CheckReady);
     }
 
@@ -29,6 +33,9 @@ public class Controller : MonoBehaviour
         OnReady.RemoveListener(CheckReady);
     }
 
+    /// <summary>
+    /// Basic Check if all events are ready
+    /// </summary>
     void CheckReady()
     {
         readyCounter++;
@@ -50,6 +57,9 @@ public class Controller : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// controls all movement inputs
+    /// </summary>
     void MovementInput()
     {
         if (Input.GetKeyDown(KeyCode.A)) //RIGHT
@@ -77,6 +87,9 @@ public class Controller : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// controls all rotation inputs
+    /// </summary>
     void RotationInput()
     {
         if (Input.GetKeyDown(KeyCode.Q))
@@ -93,6 +106,9 @@ public class Controller : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// forcefully drops the piece until its final position and places it
+    /// </summary>
     void HardDrop()
     {
         while (board.CheckMove(currentPiece))
@@ -101,33 +117,45 @@ public class Controller : MonoBehaviour
         }
         currentPiece.Move(Vector3Int.up);
         PlacePiece();
+        if (CheckBlockout()) GameOver();
+        else SpawnPiece();
     }
 
+    /// <summary>
+    /// Lower the piece by 1 space and verifies if it can continue
+    /// </summary>
     void SoftDrop()
     {
         currentPiece.Move(Vector3Int.down);
         if (!board.CheckMove(currentPiece))
         {
             currentPiece.Move(Vector3Int.up);
-            Debug.Log(5);
-            CheckBlockout();
             PlacePiece();
+            if (CheckBlockout()) GameOver();
+            else SpawnPiece();
         }
     }
 
-    void CheckBlockout()
+    /// <summary>
+    /// check if the piece has at least one cube inside a valid playarea, gameover if you dont
+    /// </summary>
+    bool CheckBlockout()
     {
         foreach (Cube cube in currentPiece.cubes)
         {
             if (cube.transform.position.y < board.limits.y)
             {
-                return;
+                return false;
             }
         }
         //blockout
-        Debug.Log("Lose");
+        return true;
+
     }
 
+    /// <summary>
+    /// Calls for a new piece
+    /// </summary>
     void SpawnPiece()
     {
         var piece = preview.NextPiece();
@@ -137,8 +165,12 @@ public class Controller : MonoBehaviour
         currentPiece = piece;
     }
 
+    /// <summary>
+    /// Fix the piece on its current position
+    /// </summary>
     void PlacePiece()
     {
+        SoundBox.DropSound();
         board.PlacePiece(currentPiece);
         timer = 0;
         var heights = currentPiece.cubes.Select(x => Mathf.RoundToInt(x.transform.position.y)).Distinct();
@@ -151,15 +183,39 @@ public class Controller : MonoBehaviour
         {
             board.ActivateGravity(heights.OrderBy(x => x).First(), scoredLines);
             pointer.Score(scoredLines);
+            SoundBox.ScoreSound();
         }
-        SpawnPiece();
     }
 
+    /// <summary>
+    /// pauses the game
+    /// </summary>
     public void Pause()
     {
         if (state != GameState.Playing) return;
         state = GameState.Paused;
         ViewController.instance.SetView(Views.Pause);
+    }
+
+    /// <summary>
+    /// triggers the end game
+    /// </summary>
+    public void GameOver()
+    {
+        SoundBox.GameOver();
+        state = GameState.Paused;
+        Debug.Log("Lose");
+        GameoverPanel.SetActive(true);
+    }
+
+    /// <summary>
+    /// restarts the game state and scenes
+    /// </summary>
+    public void Exit()
+    {
+        GameoverPanel.SetActive(false);
+        state = GameState.Exiting;
+        ViewController.instance.SetView(Views.Main, () => ViewController.instance.UnloadVIew(Views.Game));
     }
 
 }
@@ -169,4 +225,5 @@ public enum GameState
     Starting = 0,
     Playing = 1,
     Paused = 2,
+    Exiting = 3,
 }

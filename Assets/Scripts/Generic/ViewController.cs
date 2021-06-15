@@ -25,6 +25,10 @@ public class ViewController : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// Change GameView and active scene, has a callback for when camera tween ends
+    /// </summary>
     public void SetView(Views view, UnityAction callback = null)
     {
         currentView = view;
@@ -43,6 +47,7 @@ public class ViewController : MonoBehaviour
             transform.DORotate(new Vector3(0, 0, 0), 0.8f).OnComplete(() => { callback?.Invoke(); });
             if (Controller.state == GameState.Starting)
             {
+                Debug.Log(1);
                 SceneManager.LoadScene(3, LoadSceneMode.Additive);
             }
         }
@@ -53,6 +58,10 @@ public class ViewController : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// Unload any not-needed scene
+    /// </summary>
     public void UnloadVIew(Views view)
     {
         SceneManager.UnloadSceneAsync((int)view);
