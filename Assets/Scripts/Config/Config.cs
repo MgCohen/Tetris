@@ -11,16 +11,6 @@ public class Config : ScriptableObject
     public Vector2Int boardSize;
 
     [BoxGroup("Sound Settings")]
-    [OnValueChanged("ChangeSound")]
     public bool soundEffects;
-
-    [HideInInspector]
-    public UnityEvent<bool> OnSoundChange = new UnityEvent<bool>();
-
-
-    void ChangeSound()
-    {
-        OnSoundChange.Invoke(soundEffects);
-    }
 
 }
